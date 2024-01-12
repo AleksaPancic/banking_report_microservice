@@ -1,0 +1,33 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:latest
+    container_name: reportmicroservicesql
+    environment:
+      MYSQL_DATABASE: report_microservice
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - 3308:3306
+    healthcheck:
+       test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1" ]
+       timeout: 6s
+       retries: 2
+
+  report-microservice:
+    image: reportmicroservice
+    build:
+      dockerfile: Dockerfile
+    container_name: report-microservice
+    environment:
+      MYSQL_HOST: reportmicroservicesql
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PORT: 3306
+      SPRING_PROFILES_ACTIVE: dev
+    ports:
+      - 8600:5500
+      - 5006:5006
+    depends_on:
+       mysql:
+         condition: service_healthy
